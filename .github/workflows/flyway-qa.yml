@@ -1,28 +1,53 @@
 name: Flyway QA Migration
 
-# Trigger when code is merged to main or manually
 on:
   push:
-    branches: [ "main" ]       # Run after PR merge
-  workflow_dispatch:           # Optional manual trigger
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   migrate-qa:
     runs-on: ubuntu-latest
-    name: Run Flyway migrations on QA DB
+    name: Flyway migrations on QA with Dry Run
 
     steps:
       # Step 1: Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Step 2: Run Flyway migrations using Docker
-      - name: Flyway migrate on QA
+      # Step 2: Dry run migrations (see what would be applied)
+      - name: Flyway Dry Run
         env:
           DB_USER: ${{ secrets.QA_DB_USER }}
           DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
           DB_JDBC_URL: ${{ secrets.QA_DB_JDBC_URL }}
         run: |
+          echo "Generating dry run SQL..."
+          docker run --rm \
+            -v ${{ github.workspace }}/flyway/sql:/flyway/sql \
+            -v ${{ github.workspace }}/flyway/dryrun:/flyway/dryrun \
+            flyway/flyway \
+            -url="$DB_JDBC_URL" \
+            -user="$DB_USER" \
+            -password="$DB_PASSWORD" \
+            -dryRunOutput=/flyway/dryrun/dryrun.sql \
+            migrate
+
+      # Step 3: Display the dry run SQL for logs
+      - name: Show Dry Run SQL
+        run: |
+          echo "---- Dry Run SQL ----"
+          cat flyway/dryrun/dryrun.sql
+          echo "--------------------"
+
+      # Step 4: Actual migration
+      - name: Flyway Migrate
+        env:
+          DB_USER: ${{ secrets.QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
+          DB_JDBC_URL: ${{ secrets.QA_DB_JDBC_URL }}
+        run: |
+          echo "Applying migrations to QA DB..."
           docker run --rm \
             -v ${{ github.workspace }}/flyway/sql:/flyway/sql \
             flyway/flyway \
