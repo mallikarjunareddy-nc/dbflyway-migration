@@ -1,0 +1,5 @@
+CREATE TABLE users_test (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

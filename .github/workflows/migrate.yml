@@ -1,0 +1,24 @@
+name: PostgreSQL Flyway Migration
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run Flyway migrations
+        uses: flyway/flyway-action@v2
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        with:
+          url: ${{ secrets.DB_JDBC_URL }}
+          locations: filesystem:flyway/sql
+          command: migrate
