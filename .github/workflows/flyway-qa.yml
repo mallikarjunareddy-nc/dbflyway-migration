@@ -18,9 +18,9 @@ jobs:
       # Step 2: Dry run migrations (see what would be applied)
       - name: Flyway Dry Run
         env:
-          DB_USER: ${{ secrets.QA_DB_USER }}
-          DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
-          DB_JDBC_URL: ${{ secrets.QA_DB_JDBC_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_JDBC_URL: ${{ secrets.DB_JDBC_URL }}
         run: |
           echo "Generating dry run SQL..."
           docker run --rm \
@@ -43,9 +43,9 @@ jobs:
       # Step 4: Actual migration
       - name: Flyway Migrate
         env:
-          DB_USER: ${{ secrets.QA_DB_USER }}
-          DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
-          DB_JDBC_URL: ${{ secrets.QA_DB_JDBC_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_JDBC_URL: ${{ secrets.DB_JDBC_URL }}
         run: |
           echo "Applying migrations to QA DB..."
           docker run --rm \
