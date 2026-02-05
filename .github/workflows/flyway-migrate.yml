@@ -1,0 +1,36 @@
+name: Flyway Database Migration
+
+on:
+  push:
+    branches:
+      - main       # Change to 'develop' or 'release' if needed
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  flyway:
+    runs-on: ubuntu-latest
+
+    steps:
+      # STEP 1: Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # Pulls your Flyway SQL migration files from the repository
+
+      # STEP 2: Show Docker version (optional, confirms Docker availability)
+      - name: Check Docker version
+        run: docker --version
+
+      # STEP 3: Flyway Info → Validate → Migrate
+      - name: Flyway Info → Validate → Migrate
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/flyway/sql:/flyway/sql \
+            flyway/flyway:latest \
+            -url=${{ secrets.DB_JDBC_URL }} \
+            -user=${{ secrets.DB_USER }} \
+            -password=${{ secrets.DB_PASSWORD }} \
+            info validate migrate
+        # Notes:
+        # - 'info' shows current DB schema and applied migrations
+        # - 'validate' checks for missing/changed migrations (pipeline fails if mismatch)
+        # - 'migrate' applies new migrations only
